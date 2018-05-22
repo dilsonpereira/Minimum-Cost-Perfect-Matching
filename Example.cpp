@@ -1,5 +1,6 @@
 #include "Matching.h"
 #include <cstdlib>
+#include <stdio.h>
 #include <iostream>
 using namespace std;
 
