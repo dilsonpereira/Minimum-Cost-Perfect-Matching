@@ -49,29 +49,5 @@ int main(int argc, char* argv[])
 
 	delete M;
 
-	//Number of vertices
-	//IT MUST BE EVEN!!!
-	n = 1000;
-
-	//Create a Matching instance passing the number of vertices
-	M = new Matching(n);
-
-	for(int i = 0; i < n; i++)
-	{
-		for(int j = i+1; j < n; j++)
-		{
-			M->AddEdge(i, j, rand()%1000);
-		}
-	}
-
-	M->SolveMinimumCostPerfectMatching();
-	printf("%.2f\n", M->getObj());
-
-	delete M;
-
-
-
-
-
 	return 0;
 }
