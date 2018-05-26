@@ -20,7 +20,6 @@ void BinaryHeap::Clear()
 
 void BinaryHeap::Insert(double k, int s)
 {
-	key[s] = k;
 	int i;
 	for(i = ++size; i/2 > 0 && GREATER(key[i/2], k); i /= 2)
 	{
