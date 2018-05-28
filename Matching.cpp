@@ -2,24 +2,20 @@
 
 Matching::Matching(int n):
 	n(n),
-
-	blossom(2*n),
 	outer(2*n),
 	tip(2*n),
 	active(2*n),
 	deep(2*n),
-
-
+	blocked(2*n),
+	type(2*n),
+	mate(2*n),
+	dual(2*n),
+	forest(2*n),
+	root(2*n),
 	visited(2*n)
 {
 	shallow = new int*[2*n];
 	sizeShallow = new int[2*n];
-	type = new int[2*n];
-	forest = new int[2*n];
-	root = new int[2*n];
-	blocked = new int[2*n];
-	mate = new int[2*n];
-	dual = new double[2*n];
 
 	AdjMat = new int*[n];
 	AdjList = new int*[n];
@@ -49,7 +45,6 @@ Matching::Matching(int n):
 
 	E1 = new int[(n*(n-1))/2];
 	E2 = new int[(n*(n-1))/2];
-	E = new int[(n*(n-1))/2];
 	matching = new int[(n*(n-1))/2];
 	slack = new double[(n*(n-1))/2];
 	cost = new double[(n*(n-1))/2];
@@ -59,25 +54,11 @@ Matching::Matching(int n):
 		cost[i] = 0;
 	}
 	m = 0;	
-
-	auxVertexArray1 = new int[2*n];
-	auxVertexArray2 = new int[2*n];
-
-	
-	Clear();
-
-	lastInserted = -1;
 }
 
 Matching::~Matching()
 {
 	delete [] sizeShallow;
-	delete [] type;
-	delete [] forest;
-	delete [] root;
-	delete [] blocked;
-	delete [] mate;
-	delete [] dual;
 
 	for(int i = 0; i < 2*n; i++)
 	{
@@ -99,13 +80,9 @@ Matching::~Matching()
 
 	delete [] E1;
 	delete [] E2;
-	delete [] E;
 	delete [] slack;
 	delete [] cost;
 	delete [] matching;
-
-	delete [] auxVertexArray1;
-	delete [] auxVertexArray2;
 }
 
 void Matching::AddEdge(int u, int v)
@@ -195,7 +172,6 @@ void Matching::Grow()
 				{
 					int b = Blossom(u,v);
 
-					//BFSList.push_front(deep[b][0]);
 					BFSList.push_front(b);
 					visited[b] = true;
 
@@ -285,7 +261,6 @@ void Matching::DestroyBlossom(int t)
 	for(int i = 0; i < sizeShallow[t]; i++)
 	{
 		int s = shallow[t][i];
-		blossom[s] = s;
 		outer[s] = s;
 		for(list<int>::iterator it = deep[s].begin(); it != deep[s].end(); it++)
 			outer[*it] = s;	
@@ -363,7 +338,6 @@ void Matching::Expand(int u, bool expandBlocked = false)
 	for(int i = 0; i < sizeShallow[u]; i++)
 	{
 		int s = shallow[u][i];
-		blossom[s] = s;
 		outer[s] = s;
 		for(list<int>::iterator it = deep[s].begin(); it != deep[s].end(); it++)
 			outer[*it] = s;	
@@ -381,45 +355,38 @@ void Matching::Expand(int u, bool expandBlocked = false)
 //Augment the path root[u], ..., u, v, ..., root[v]
 void Matching::Augment(int u, int v)
 {
-	memset(auxVertexArray1, 0, 2*n*sizeof(int));
-	int sizePath = 0;
-
-	int p, q;
-
 	//We go from u and v to its respective roots, alternating the matching
-	p = outer[u];
-	q = outer[v];
+	int p = outer[u];
+	int q = outer[v];
+	int fp = forest[p];
 	mate[p] = q;
 	mate[q] = p;
-	auxVertexArray1[sizePath++] = p;
-	auxVertexArray1[sizePath++] = q;
-	while(forest[p] != -1)
+	Expand(p);
+	Expand(q);
+	while(fp != -1)
 	{
 		q = outer[forest[p]];
 		p = outer[forest[q]];
+		fp = forest[p];
 
 		mate[p] = q;
 		mate[q] = p;
-		auxVertexArray1[sizePath++] = p;
-		auxVertexArray1[sizePath++] = q;
+		Expand(p);
+		Expand(q);
 	}
 
 	p = outer[v];
-	while(forest[p] != -1)
+	fp = forest[p];
+	while(fp != -1)
 	{
 		q = outer[forest[p]];
 		p = outer[forest[q]];
+		fp = forest[p];
 
 		mate[p] = q;
 		mate[q] = p;
-		auxVertexArray1[sizePath++] = p;
-		auxVertexArray1[sizePath++] = q;
-	}
-
-	//Some vertices may be blossoms, they need to be expanded
-	for(int i = 0; i < sizePath; i++)
-	{
-		Expand(auxVertexArray1[i]);
+		Expand(p);
+		Expand(q);
 	}
 }
 
@@ -473,64 +440,51 @@ int Matching::Blossom(int u, int v)
 {
 	int t = GetFreeBlossomIndex();
 
-	memset(auxVertexArray1, 0, 2*n*sizeof(int));
-	memset(auxVertexArray2, 0, 2*n*sizeof(int));
+	vector<bool> isInPath(2*n, false);
 
 	//Find the tip of the blossom
-	int u_ = u, v_ = v;
-	while(true)
+	int u_ = u; 
+	while(u_ != -1)
 	{
-		auxVertexArray1[outer[u_]] = true;
-		auxVertexArray2[outer[v_]] = true;
+		isInPath[outer[u_]] = true;
 
-		if(auxVertexArray1[outer[v_]])
-		{
-			tip[t] = outer[v_];
-			break;
-		}
-		if(auxVertexArray2[outer[u_]])
-		{
-			tip[t] = outer[u_];
-			break;
-		}
-		
-		if(forest[outer[u_]] != -1) u_ = forest[outer[u_]];
-		if(forest[outer[v_]] != -1) v_ = forest[outer[v_]];
+		u_ = forest[outer[u_]];
 	}
+
+	int v_ = outer[v];
+	while(not isInPath[v_])
+		v_ = outer[forest[v_]];
+	tip[t] = v_;
 
 	//Find the odd circuit, update shallow, outer, blossom and deep
 	//First we construct the set shallow (the odd circuit)
+	list<int> circuit;
 	u_ = outer[u];
-	int sizePathu = 0;
-	auxVertexArray1[sizePathu++] = u_;
+	circuit.push_front(u_);
 	while(u_ != tip[t])
 	{
 		u_ = outer[forest[u_]];
-		auxVertexArray1[sizePathu++] = u_;
+		circuit.push_front(u_);
 	}
 
 	sizeShallow[t] = 0;
 	deep[t].clear();
-	for(int i = 0; i < sizePathu; i++)
+	for(list<int>::iterator it = circuit.begin(); it != circuit.end(); it++)
 	{
-		u_ = auxVertexArray1[sizePathu-i-1];
-		shallow[t][i] = u_;
-		sizeShallow[t]++;
+		shallow[t][sizeShallow[t]++] = *it;
 	}
 
 	v_ = outer[v];
 	while(v_ != tip[t])
 	{
-		shallow[t][sizeShallow[t]] = v_;
-		
+		shallow[t][sizeShallow[t]++] = v_;
 		v_ = outer[forest[v_]];
-		sizeShallow[t]++;
 	}
+
 	//Now we construct deep and update outer
 	for(int i = 0; i < sizeShallow[t]; i++)
 	{
 		u_ = shallow[t][i];
-		blossom[u_] = t;
 		outer[u_] = t;
 		for(list<int>::iterator it = deep[u_].begin(); it != deep[u_].end(); it++)
 		{
@@ -716,7 +670,6 @@ void Matching::Clear()
 
 	for(int i = 0; i < 2*n; i++)
 	{
-		blossom[i] = i;
 		outer[i] = i;
 		deep[i].clear();
 		if(i<n)
