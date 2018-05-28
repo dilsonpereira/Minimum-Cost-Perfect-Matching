@@ -6,6 +6,7 @@ Matching::Matching(int n):
 	tip(2*n),
 	active(2*n),
 	deep(2*n),
+	shallow(2*n),
 	blocked(2*n),
 	type(2*n),
 	mate(2*n),
@@ -14,9 +15,6 @@ Matching::Matching(int n):
 	root(2*n),
 	visited(2*n)
 {
-	shallow = new int*[2*n];
-	sizeShallow = new int[2*n];
-
 	AdjMat = new int*[n];
 	AdjList = new int*[n];
 	sizeAdjList = new int[n];
@@ -25,8 +23,6 @@ Matching::Matching(int n):
 
 	for(int i = 0; i < 2*n; i++)
 	{
-		shallow[i] = new int[2*n];
-
 		if(i < n)
 		{
 			sizeAdjList[i] = 0;
@@ -58,11 +54,8 @@ Matching::Matching(int n):
 
 Matching::~Matching()
 {
-	delete [] sizeShallow;
-
 	for(int i = 0; i < 2*n; i++)
 	{
-		delete [] shallow[i];
 		if(i < n)
 		{
 			delete [] AdjList[i];
@@ -71,7 +64,6 @@ Matching::~Matching()
 			delete [] I[i];
 		}
 	}
-	delete [] shallow;
 	delete [] AdjMat;
 	delete [] AdjList;
 	delete [] sizeAdjList;
@@ -258,15 +250,15 @@ void Matching::DestroyBlossom(int t)
 	if((t < n) ||
 		(blocked[t] && GREATER(dual[t], 0))) return;
 
-	for(int i = 0; i < sizeShallow[t]; i++)
+	for(list<int>::iterator it = shallow[t].begin(); it != shallow[t].end(); it++)
 	{
-		int s = shallow[t][i];
+		int s = *it;
 		outer[s] = s;
-		for(list<int>::iterator it = deep[s].begin(); it != deep[s].end(); it++)
-			outer[*it] = s;	
+		for(list<int>::iterator jt = deep[s].begin(); jt != deep[s].end(); jt++)
+			outer[*jt] = s;	
+
+		DestroyBlossom(s);
 	}
-	for(int i = 0; i < sizeShallow[t]; i++)
-		DestroyBlossom(shallow[t][i]);
 
 	active[t] = false;
 	blocked[t] = false;
@@ -300,56 +292,52 @@ void Matching::Expand(int u, bool expandBlocked = false)
 	//If u is a regular vertex, we are done
 	if(u < n || (blocked[u] and not expandBlocked)) return;
 
-	int t;
+	bool found = false;
 	//Find the position t of the new tip of the blossom
-	for(int i = 0; i < sizeShallow[u]; i++)
+	for(list<int>::iterator it = shallow[u].begin(); it != shallow[u].end() and not found; )
 	{
-		int found = false;
-		int si = shallow[u][i];
-
-		for(list<int>::iterator it = deep[si].begin(); it != deep[si].end(); it++)
+		int si = *it;
+		for(list<int>::iterator jt = deep[si].begin(); jt != deep[si].end() and not found; jt++)
 		{
-			if(*it == p )
-			{
-				t = i;
-				found = true; break;
-			}
+			if(*jt == p )
+				found = true;
 		}
-		if(found) break;
+		it++;
+		if(not found)
+		{
+			shallow[u].push_back(si);
+			shallow[u].pop_front();
+		}
 	}
 
+	list<int>::iterator it = shallow[u].begin();
 	//Adjust the mate of the tip
-	mate[shallow[u][t]] = mate[u];
-
+	mate[*it] = mate[u];
+	it++;
+	//
 	//Now we go through the odd circuit adjusting the new mates
-	for(int i = t+1; i % sizeShallow[u] != t; i++)
+	while(it != shallow[u].end())
 	{
-		if((i - t)%2)
-		{
-			mate[ shallow[u][ i%sizeShallow[u] ] ] = shallow[u][ (i+1)%sizeShallow[u] ];	
-		}
-		else
-		{
-			mate[ shallow[u][ i%sizeShallow[u] ] ] = shallow[u][ (i-1)%sizeShallow[u] ];	
-		}	
+		list<int>::iterator itnext = it;
+		itnext++;
+		mate[*it] = *itnext;
+		mate[*itnext] = *it;
+		itnext++;
+		it = itnext;
 	}
 
 	//We update the sets blossom, shallow, and outer since this blossom is being deactivated
-	for(int i = 0; i < sizeShallow[u]; i++)
+	for(list<int>::iterator it = shallow[u].begin(); it != shallow[u].end(); it++)
 	{
-		int s = shallow[u][i];
+		int s = *it;
 		outer[s] = s;
-		for(list<int>::iterator it = deep[s].begin(); it != deep[s].end(); it++)
-			outer[*it] = s;	
+		for(list<int>::iterator jt = deep[s].begin(); jt != deep[s].end(); jt++)
+			outer[*jt] = s;	
+
+		Expand(s, expandBlocked);
 	}
 	active[u] = false;
 	AddFreeBlossomIndex(u);
-
-	//We expand the vertices in the blossom
-	for(int i = 0; i < sizeShallow[u]; i++)
-	{
-		Expand(shallow[u][i], expandBlocked);
-	}
 }
 
 //Augment the path root[u], ..., u, v, ..., root[v]
@@ -467,29 +455,29 @@ int Matching::Blossom(int u, int v)
 		circuit.push_front(u_);
 	}
 
-	sizeShallow[t] = 0;
+	shallow[t].clear();
 	deep[t].clear();
 	for(list<int>::iterator it = circuit.begin(); it != circuit.end(); it++)
 	{
-		shallow[t][sizeShallow[t]++] = *it;
+		shallow[t].push_back(*it);
 	}
 
 	v_ = outer[v];
 	while(v_ != tip[t])
 	{
-		shallow[t][sizeShallow[t]++] = v_;
+		shallow[t].push_back(v_);
 		v_ = outer[forest[v_]];
 	}
 
 	//Now we construct deep and update outer
-	for(int i = 0; i < sizeShallow[t]; i++)
+	for(list<int>::iterator it = shallow[t].begin(); it != shallow[t].end(); it++)
 	{
-		u_ = shallow[t][i];
+		u_ = *it;
 		outer[u_] = t;
-		for(list<int>::iterator it = deep[u_].begin(); it != deep[u_].end(); it++)
+		for(list<int>::iterator jt = deep[u_].begin(); jt != deep[u_].end(); jt++)
 		{
-			deep[t].push_back(*it);
-			outer[*it] = t;
+			deep[t].push_back(*jt);
+			outer[*jt] = t;
 		}
 	}
 
@@ -674,7 +662,7 @@ void Matching::Clear()
 		deep[i].clear();
 		if(i<n)
 			deep[i].push_back(i);
-		sizeShallow[i] = 0;
+		shallow[i].clear();
 		if(i < n) active[i] = true;
 		else active[i] = false;
 	

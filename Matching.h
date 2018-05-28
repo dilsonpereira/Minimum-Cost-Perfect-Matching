@@ -59,8 +59,7 @@ private:
 
 	vector<int> outer;//outer[v] gives the index of the blossom that contains v but is not contained in any other blossom (default is outer[v] = v)
 	vector< list<int> > deep;//deep[v] is a list of all the original vertices contained inside v
-	int **shallow;//shallow[v] is a list of the vertices immediately contained inside v, the list has the exact order of the odd circuit of the blossom
-	int *sizeShallow;
+	vector< list<int> > shallow;//shallow[v] is a list of the vertices immediately contained inside v, the list has the exact order of the odd circuit of the blossom
 	vector<int> tip;//tip of the blossom 	
 	vector<bool> active;
 
