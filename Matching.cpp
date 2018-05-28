@@ -1,14 +1,17 @@
 #include "Matching.h"
 
-Matching::Matching(int n)
-{
-	this->n = n;
+Matching::Matching(int n):
+	n(n),
 
-	Free = new int[2*n];
-	blossom = new int[2*n];
-	outer = new int[2*n];
-	deep = new int*[2*n];
-	sizeDeep = new int[2*n];
+	blossom(2*n),
+	outer(2*n),
+	tip(2*n),
+	active(2*n),
+	deep(2*n),
+
+
+	visited(2*n)
+{
 	shallow = new int*[2*n];
 	sizeShallow = new int[2*n];
 	type = new int[2*n];
@@ -17,19 +20,15 @@ Matching::Matching(int n)
 	blocked = new int[2*n];
 	mate = new int[2*n];
 	dual = new double[2*n];
-	tip = new int[2*n];
+
 	AdjMat = new int*[n];
 	AdjList = new int*[n];
 	sizeAdjList = new int[n];
 	I = new int*[n];
 	C = new double*[n];
-	active = new int[2*n];
-	visited = new int[2*n];
-	keys = new int[n];
 
 	for(int i = 0; i < 2*n; i++)
 	{
-		deep[i] = new int[2*n];	
 		shallow[i] = new int[2*n];
 
 		if(i < n)
@@ -64,7 +63,6 @@ Matching::Matching(int n)
 	auxVertexArray1 = new int[2*n];
 	auxVertexArray2 = new int[2*n];
 
-	Bheap = new BinaryHeap(n+1);
 	
 	Clear();
 
@@ -73,10 +71,6 @@ Matching::Matching(int n)
 
 Matching::~Matching()
 {
-	delete [] Free;
-	delete [] blossom;
-	delete [] outer;
-	delete [] sizeDeep;
 	delete [] sizeShallow;
 	delete [] type;
 	delete [] forest;
@@ -84,13 +78,9 @@ Matching::~Matching()
 	delete [] blocked;
 	delete [] mate;
 	delete [] dual;
-	delete [] tip;
-	delete [] active;
-	delete [] visited;
 
 	for(int i = 0; i < 2*n; i++)
 	{
-		delete [] deep[i];	
 		delete [] shallow[i];
 		if(i < n)
 		{
@@ -100,14 +90,12 @@ Matching::~Matching()
 			delete [] I[i];
 		}
 	}
-	delete [] deep;
 	delete [] shallow;
 	delete [] AdjMat;
 	delete [] AdjList;
 	delete [] sizeAdjList;
 	delete [] C;
 	delete [] I;
-	delete [] keys;
 
 	delete [] E1;
 	delete [] E2;
@@ -118,7 +106,6 @@ Matching::~Matching()
 
 	delete [] auxVertexArray1;
 	delete [] auxVertexArray2;
-	delete Bheap;
 }
 
 void Matching::AddEdge(int u, int v)
@@ -149,16 +136,6 @@ int Matching::IsInMatching(int u, int v)
 	return matching[I[u][v]];
 }
 
-void Matching::DeleteEdges()
-{
-	m = 0;
-	for(int i = 0; i < n; i++)
-	{
-		memset(AdjMat[i], 0, n*sizeof(int));
-	}
-	memset(sizeAdjList, 0, n*sizeof(int));
-}
-
 //Grows an alternating forest
 void Matching::Grow()
 {
@@ -169,16 +146,16 @@ void Matching::Grow()
 		int w = outer[BFSList.front()];
 		BFSList.pop_front();
 
-		for(int k = 0; k < sizeDeep[w]; k++)
+		for(list<int>::iterator it = deep[w].begin(); it != deep[w].end(); it++)
 		{
-			int u = deep[w][k];
+			int u = *it;
+
 			int cont = false;
 			for(int i = 0; i < sizeAdjList[u]; i++)
 			{
 				int v = AdjList[u][i];
 
-				//Check if the edge is blocked
-				if(GREATER(slack[I[u][v]], 0)) continue;
+				if(IsEdgeBlocked(u, v)) continue;
 
 				//u is even and v is odd
 				if(type[outer[v]] == ODD) continue;	
@@ -218,7 +195,8 @@ void Matching::Grow()
 				{
 					int b = Blossom(u,v);
 
-					BFSList.push_front(deep[b][0]);
+					//BFSList.push_front(deep[b][0]);
+					BFSList.push_front(b);
 					visited[b] = true;
 
 					cont = true;
@@ -232,33 +210,45 @@ void Matching::Grow()
 	//Check if the matching is perfect
 	perfect = true;
 	for(int i = 0; i < n; i++)
-	{
 		if(mate[outer[i]] == -1)
-		{
 			perfect = false;
-		}
-	}
+}
+
+bool Matching::IsAdjacent(int u, int v)
+{
+	return (AdjMat[u][v] and not IsEdgeBlocked(u, v));
+}
+
+bool Matching::IsEdgeBlocked(int u, int v)
+{
+	return GREATER(slack[ I[u][v] ], 0);
+}
+
+bool Matching::IsEdgeBlocked(int e)
+{
+	return GREATER(slack[e], 0);
 }
 
 void Matching::Heuristic()
 {
-	for(int i = 0; i < n; i++)
-		keys[i] = 0;	
+	vector<int> degree(n, 0);
+	BinaryHeap B(n);
 
 	for(int i = 0; i < m; i++)
 	{
-		if(GREATER(slack[i], 0)) continue;
+		if(IsEdgeBlocked(i)) continue;
 
 		int u = E1[i];
 		int v = E2[i];
 
-		keys[u]++;
-		keys[v]++;
+		degree[u]++;
+		degree[v]++;
 	}
-	for(int i = 0; i < n; i++)
-		Bheap->Insert(keys[i], i);
 
-	int u =	Bheap->DeleteMin();
+	for(int i = 0; i < n; i++)
+		B.Insert(degree[i], i);
+
+	int u =	B.DeleteMin();
 	while(u != -1)
 	{
 		if(mate[outer[u]] == -1)
@@ -267,13 +257,12 @@ void Matching::Heuristic()
 			for(int i = 0; i < sizeAdjList[u]; i++)
 			{
 				int v = AdjList[u][i];
-				if(GREATER(slack[I[u][v]], 0)) continue;
-				if(outer[u] == outer[v]) continue;
-				if(mate[outer[v]] != -1) continue;
+				if(IsEdgeBlocked(u, v) ||
+					(outer[u] == outer[v]) ||
+					(mate[outer[v]] != -1) )
+					continue;
 
-				if(min == -1) 
-					min = v;
-				else if(keys[v] < keys[min])
+				if(min == -1 || degree[v] < degree[min])
 					min = v;	
 			}
 			if(min != -1)
@@ -283,34 +272,30 @@ void Matching::Heuristic()
 			}
 		}
 
-		u = Bheap->DeleteMin();
+		u = B.DeleteMin();
 	}
-
-	Reset();
 }
 
 //Destroys a blossom recursively
 void Matching::DestroyBlossom(int t)
 {
-	if(t < n) return;
-	if(blocked[t] && GREATER(dual[t], 0)) return;
+	if((t < n) ||
+		(blocked[t] && GREATER(dual[t], 0))) return;
 
 	for(int i = 0; i < sizeShallow[t]; i++)
 	{
 		int s = shallow[t][i];
 		blossom[s] = s;
 		outer[s] = s;
-		for(int j = 0; j < sizeDeep[s]; j++)
-		{
-			outer[deep[s][j]] = s;	
-		}
+		for(list<int>::iterator it = deep[s].begin(); it != deep[s].end(); it++)
+			outer[*it] = s;	
 	}
 	for(int i = 0; i < sizeShallow[t]; i++)
 		DestroyBlossom(shallow[t][i]);
 
 	active[t] = false;
 	blocked[t] = false;
-	Free[sizeFree++] = t;
+	AddFreeBlossomIndex(t);
 	mate[t] = -1;
 }
 
@@ -318,16 +303,16 @@ void Matching::Expand(int u, bool expandBlocked = false)
 {
 	int v = mate[u];
 
-	int index = 10000000;
+	int index = m;
 	int p, q;
 	//Find the regular edge {p,q} of minimum index I[p,q] connecting u and its mate
-	for(int i = 0; i < sizeDeep[u]; i++)
+	for(list<int>::iterator it = deep[u].begin(); it != deep[u].end(); it++)
 	{	
-		int di = deep[u][i];
-		for(int j = 0; j < sizeDeep[v]; j++)
+		int di = *it;
+		for(list<int>::iterator jt = deep[v].begin(); jt != deep[v].end(); jt++)
 		{
-			int dj = deep[v][j];
-			if(AdjMat[di][dj] && !(GREATER(slack[ I[di][dj] ], 0)) && I[di][dj] < index)
+			int dj = *jt;
+			if(IsAdjacent(di, dj) && I[di][dj] < index)
 			{
 				index = I[di][dj];
 				p = di;
@@ -335,7 +320,7 @@ void Matching::Expand(int u, bool expandBlocked = false)
 			}
 		}
 	}
-
+	
 	mate[u] = q;
 	//If u is a regular vertex, we are done
 	if(u < n || (blocked[u] and not expandBlocked)) return;
@@ -347,9 +332,9 @@ void Matching::Expand(int u, bool expandBlocked = false)
 		int found = false;
 		int si = shallow[u][i];
 
-		for(int j = 0; j < sizeDeep[ si ]; j++)
+		for(list<int>::iterator it = deep[si].begin(); it != deep[si].end(); it++)
 		{
-			if(deep[ si ][j] == p )
+			if(*it == p )
 			{
 				t = i;
 				found = true; break;
@@ -380,84 +365,16 @@ void Matching::Expand(int u, bool expandBlocked = false)
 		int s = shallow[u][i];
 		blossom[s] = s;
 		outer[s] = s;
-		for(int j = 0; j < sizeDeep[s]; j++)
-		{
-			outer[deep[s][j]] = s;	
-		}
+		for(list<int>::iterator it = deep[s].begin(); it != deep[s].end(); it++)
+			outer[*it] = s;	
 	}
 	active[u] = false;
-	Free[sizeFree++] = u;
+	AddFreeBlossomIndex(u);
 
 	//We expand the vertices in the blossom
 	for(int i = 0; i < sizeShallow[u]; i++)
 	{
 		Expand(shallow[u][i], expandBlocked);
-	}
-}
-
-
-void Matching::Expand2(int u, int p, int q, bool expandBlocked = false)
-{
-	mate[u] = q;
-	//If u is a regular vertex, we are done
-	if(u < n || (blocked[u] and not expandBlocked)) return;
-
-	int t;
-	//Find the position t of the new tip of the blossom
-	for(int i = 0; i < sizeShallow[u]; i++)
-	{
-		int found = false;
-		int si = shallow[u][i];
-
-		for(int j = 0; j < sizeDeep[ si ]; j++)
-		{
-			if(deep[ si ][j] == p )
-			{
-				t = i;
-				found = true; break;
-			}
-		}
-		if(found) break;
-	}
-
-	//Adjust the mate of the tip
-	mate[shallow[u][t]] = mate[u];
-
-	//Now we go through the odd circuit adjusting the new mates
-	for(int i = t+1; i % sizeShallow[u] != t; i++)
-	{
-		if((i - t)%2)
-		{
-			mate[ shallow[u][ i%sizeShallow[u] ] ] = shallow[u][ (i+1)%sizeShallow[u] ];	
-		}
-		else
-		{
-			mate[ shallow[u][ i%sizeShallow[u] ] ] = shallow[u][ (i-1)%sizeShallow[u] ];	
-		}	
-	}
-
-	//We update the sets blossom, shallow, and outer since this blossom is being deactivated
-	for(int i = 0; i < sizeShallow[u]; i++)
-	{
-		int s = shallow[u][i];
-		blossom[s] = s;
-		outer[s] = s;
-		for(int j = 0; j < sizeDeep[s]; j++)
-		{
-			outer[deep[s][j]] = s;	
-		}
-	}
-	active[u] = false;
-	Free[sizeFree++] = u;
-
-	//We expand the vertices in the blossom
-	for(int i = 0; i < sizeShallow[u]; i++)
-	{
-		//if(i == t) //Expand2(shallow[u][i], p, q, expandBlocked);
-		//	Expand(shallow[u][i], expandBlocked);
-
-		//else 
-			Expand(shallow[u][i], expandBlocked);
 	}
 }
 
@@ -517,7 +434,7 @@ void Matching::Reset()
 			DestroyBlossom(i);
 	}
 
-	memset(visited, 0, 2*n*sizeof(int));
+	visited.assign(2*n, 0);
 	BFSList.clear();
 	for(int i = 0; i < n; i++)
 	{
@@ -532,18 +449,29 @@ void Matching::Reset()
 	}
 }
 
-//Returns a free index for a new blossom
-int Matching::GetFreeIndex()
+int Matching::GetFreeBlossomIndex()
 {
-	int i = Free[0];
-	Free[0] = Free[--sizeFree];
+	int i = free.back();
+	free.pop_back();
 	return i;
+}
+
+int Matching::AddFreeBlossomIndex(int i)
+{
+	free.push_back(i);
+}
+
+void Matching::ClearBlossomIndices()
+{
+	free.clear();
+	for(int i = n; i < 2*n; i++)
+		AddFreeBlossomIndex(i);
 }
 
 //Contracts the blossom w, ..., u, v, ..., w, where w is the first vertex that appears in the paths from u and v to their respective roots
 int Matching::Blossom(int u, int v)
 {
-	int t = GetFreeIndex();
+	int t = GetFreeBlossomIndex();
 
 	memset(auxVertexArray1, 0, 2*n*sizeof(int));
 	memset(auxVertexArray2, 0, 2*n*sizeof(int));
@@ -582,7 +510,7 @@ int Matching::Blossom(int u, int v)
 	}
 
 	sizeShallow[t] = 0;
-	sizeDeep[t] = 0;
+	deep[t].clear();
 	for(int i = 0; i < sizePathu; i++)
 	{
 		u_ = auxVertexArray1[sizePathu-i-1];
@@ -604,10 +532,10 @@ int Matching::Blossom(int u, int v)
 		u_ = shallow[t][i];
 		blossom[u_] = t;
 		outer[u_] = t;
-		for(int j = 0; j < sizeDeep[u_]; j++)
+		for(list<int>::iterator it = deep[u_].begin(); it != deep[u_].end(); it++)
 		{
-			deep[t][ sizeDeep[t]++ ] = deep[u_ ][j];
-			outer[deep[u_][j]] = t;
+			deep[t].push_back(*it);
+			outer[*it] = t;
 		}
 	}
 
@@ -745,59 +673,22 @@ void Matching::SolveMinimumCostPerfectMatching()
 	for(int i = 0; i < m; i++)
 		slack[i] = cost[i];
 
-	//memset(sizeAdjList, 0, n*sizeof(int));
-	while(true)
-	{
-		Heuristic();
+	//Run an heuristic maximum matching algorithm
+	Heuristic();
+	//Grow a hungarian forest
+	Grow();
 
-		//Grow a new hungarian forest
-		Grow();
-		//If the matching on the compressed graph is perfect, we are done
-		if(perfect) break;
-		//Otherwise we update the dual costs	
-		//memset(sizeAdjList, 0, n*sizeof(int));	
+	//If the matching on the compressed graph is perfect, we are done
+	while(not perfect)
+	{
 		UpdateDualCosts();
 		//Set up the algorithm for a new grow step
 		Reset();
+		Heuristic();
+		Grow();
 	}
 
-	//Find the actual matching
-	for(int i = 0; i < 2*n; i++)
-	{
-		if(active[i] && outer[i] == i)
-		{
-			//int q = mate[i];
-			//int p = mate[outer[q]];
-			//Expand2(i, p, q, true);
-			Expand(i, true);
-		}
-	}
-
-	obj = 0;
-	for(int i = 0; i < m; i++)
-	{
-		int u = E1[i];
-		int v = E2[i];
-
-		cost[i] += minEdge;
-
-		if(mate[u] == v)
-		{
-			matching[i] = 1;
-			obj += cost[i];
-		}
-		else
-		{
-			matching[i] = 0;
-		}
-	}
-
-	double dualObj = 0;
-	for(int i = 0; i < 2*n; i++)
-	{
-		if(i < n) dualObj += dual[i];
-		else if(blocked[i]) dualObj += dual[i];	
-	}
+	RetrieveMatching();
 }
 
 void Matching::PositiveCosts()
@@ -815,25 +706,21 @@ void Matching::SolvePerfectMatching()
 {
 	Clear();
 	Grow();
+	RetrieveMatching();
 }
 
 //Sets up the algorithm for a new run
 void Matching::Clear()
 {
+	ClearBlossomIndices();
+
 	for(int i = 0; i < 2*n; i++)
 	{
-		sizeFree = 0;
-		for(int j = n; j < 2*n; j++)
-		{
-			Free[sizeFree++] = j;
-		}
 		blossom[i] = i;
 		outer[i] = i;
-		sizeDeep[i] = 0;
+		deep[i].clear();
 		if(i<n)
-		{
-			deep[i][sizeDeep[i]++] = i;
-		}
+			deep[i].push_back(i);
 		sizeShallow[i] = 0;
 		if(i < n) active[i] = true;
 		else active[i] = false;
@@ -865,4 +752,37 @@ void Matching::SetCost(int u, int v, double c)
 double Matching::getObj()
 {
 	return obj;
+}
+
+void Matching::RetrieveMatching()
+{
+	for(int i = 0; i < 2*n; i++)
+		if(active[i] && outer[i] == i)
+			Expand(i, true);
+
+	obj = 0;
+	for(int i = 0; i < m; i++)
+	{
+		int u = E1[i];
+		int v = E2[i];
+
+		cost[i] += minEdge;
+
+		if(mate[u] == v)
+		{
+			matching[i] = 1;
+			obj += cost[i];
+		}
+		else
+		{
+			matching[i] = 0;
+		}
+	}
+
+	double dualObj = 0;
+	for(int i = 0; i < 2*n; i++)
+	{
+		if(i < n) dualObj += dual[i];
+		else if(blocked[i]) dualObj += dual[i];	
+	}
 }

@@ -3,6 +3,8 @@
 #include "BinaryHeap.h"
 #include <cstring>
 #include <list>
+#include <vector>
+#include <iostream>
 using namespace std;
 
 #define EVEN 2
@@ -35,31 +37,34 @@ public:
 private:
 	void Grow();
 	void Expand(int u, bool expandBlocked);
-	void Expand2(int u, int p, int q, bool expandBlocked);
 	void OutermostBlocked(int u, int &v);
 	void Augment(int u, int v);
 	void Reset();
-	int GetFreeIndex();
 	int Blossom(int u, int v);
 	void UpdateDualCosts();
 	void Clear();
 	void DestroyBlossom(int t);
-	void Open2(int u, int p, int q);
 	void Heuristic();
 	void PositiveCosts();
-	void DeleteEdges();
+	void RetrieveMatching();
 
-	int *Free;//List of free indices
-	int sizeFree;//Size of the list
+	int GetFreeBlossomIndex();
+	int AddFreeBlossomIndex(int i);
+	void ClearBlossomIndices();
 
-	int *blossom;//blossom[v] gives the index of the blossom where v is immediatelly contained (default is blossom[v] = v);
-	int *outer;//outer[v] gives the index of the blossom that contains v but is not contained in any other blossom (default is outer[v] = v)
-	int **deep;//deep[v] is a list of all the original vertices contained inside v
-	int *sizeDeep;
+	bool IsEdgeBlocked(int u, int v);
+	bool IsEdgeBlocked(int e);
+	bool IsAdjacent(int u, int v);
+
+	list<int> free;//List of free blossom indices
+
+	vector<int> blossom;//blossom[v] gives the index of the blossom where v is immediatelly contained (default is blossom[v] = v);
+	vector<int> outer;//outer[v] gives the index of the blossom that contains v but is not contained in any other blossom (default is outer[v] = v)
+	vector< list<int> > deep;//deep[v] is a list of all the original vertices contained inside v
 	int **shallow;//shallow[v] is a list of the vertices immediately contained inside v, the list has the exact order of the odd circuit of the blossom
 	int *sizeShallow;
-	int *tip;//tip of the blossom 	
-	int *active;
+	vector<int> tip;//tip of the blossom 	
+	vector<int> active;
 
 	int *type;//Even, odd, neither (2, 1, 0)
 	int *forest;//forest[v] gives the father of v in the alternating forest
@@ -95,9 +100,6 @@ private:
 
 	list<int> BFSList;
 	int *inList;
-	int *visited;
-
-	int *keys;
-	BinaryHeap* Bheap;
+	vector<int> visited;
 };
 
