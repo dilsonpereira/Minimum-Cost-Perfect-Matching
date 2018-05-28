@@ -1,6 +1,5 @@
 #include "Matching.h"
 #include <cstdlib>
-#include <stdio.h>
 #include <iostream>
 using namespace std;
 
@@ -46,9 +45,42 @@ int main(int argc, char* argv[])
 
 	//To get optimal cost
 	//M->getObj()
-	printf("%.2f\n", M->getObj());
 
 	delete M;
 
+	int x;
+	cin >> x;
+	srand( x );
+
+
+	//Number of vertices
+	//IT MUST BE EVEN!!!
+	n = 100;
+
+	//Create a Matching instance passing the number of vertices
+	M = new Matching(n);
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j = i+1; j < n; j++)
+		{
+			if(rand()%10 == 0)
+				M->AddEdge(i, j, rand()%1000);
+		}
+	}
+
+	M->SolveMinimumCostPerfectMatching();
+	printf("%.2f\n", M->getObj());
+
+
+	delete M;
+
+
+
+
+
 	return 0;
 }
+
+
+

@@ -19,7 +19,6 @@ Matching::Matching(int n)
 	dual = new double[2*n];
 	tip = new int[2*n];
 	AdjMat = new int*[n];
-	Artificial = new int*[n];
 	AdjList = new int*[n];
 	sizeAdjList = new int[n];
 	I = new int*[n];
@@ -37,7 +36,6 @@ Matching::Matching(int n)
 		{
 			sizeAdjList[i] = 0;
 			AdjMat[i] = new int[n];
-			Artificial[i] = new int[n];
 			AdjList[i] = new int[n];
 			I[i] = new int[n];
 			C[i] = new double[n];
@@ -46,7 +44,6 @@ Matching::Matching(int n)
 				I[i][j] = -1;
 				C[i][j] = 0;
 				AdjMat[i][j] = 0;
-				Artificial[i][j] = 0;
 			}
 		}
 	}
@@ -99,7 +96,6 @@ Matching::~Matching()
 		{
 			delete [] AdjList[i];
 			delete [] AdjMat[i];
-			delete [] Artificial[i];
 			delete [] C[i];		
 			delete [] I[i];
 		}
@@ -107,7 +103,6 @@ Matching::~Matching()
 	delete [] deep;
 	delete [] shallow;
 	delete [] AdjMat;
-	delete [] Artificial;
 	delete [] AdjList;
 	delete [] sizeAdjList;
 	delete [] C;
@@ -160,7 +155,6 @@ void Matching::DeleteEdges()
 	for(int i = 0; i < n; i++)
 	{
 		memset(AdjMat[i], 0, n*sizeof(int));
-		memset(Artificial[i], 0, n*sizeof(int));
 	}
 	memset(sizeAdjList, 0, n*sizeof(int));
 }
@@ -320,7 +314,7 @@ void Matching::DestroyBlossom(int t)
 	mate[t] = -1;
 }
 
-void Matching::Expand(int u)
+void Matching::Expand(int u, bool expandBlocked = false)
 {
 	int v = mate[u];
 
@@ -336,7 +330,6 @@ void Matching::Expand(int u)
 			if(AdjMat[di][dj] && !(GREATER(slack[ I[di][dj] ], 0)) && I[di][dj] < index)
 			{
 				index = I[di][dj];
-			
 				p = di;
 				q = dj;
 			}
@@ -345,7 +338,7 @@ void Matching::Expand(int u)
 
 	mate[u] = q;
 	//If u is a regular vertex, we are done
-	if(u < n || blocked[u]) return;
+	if(u < n || (blocked[u] and not expandBlocked)) return;
 
 	int t;
 	//Find the position t of the new tip of the blossom
@@ -398,16 +391,16 @@ void Matching::Expand(int u)
 	//We expand the vertices in the blossom
 	for(int i = 0; i < sizeShallow[u]; i++)
 	{
-		Expand(shallow[u][i]);
+		Expand(shallow[u][i], expandBlocked);
 	}
 }
 
 
-void Matching::Expand2(int u, int p, int q)
+void Matching::Expand2(int u, int p, int q, bool expandBlocked = false)
 {
 	mate[u] = q;
 	//If u is a regular vertex, we are done
-	if(u < n || blocked[u]) return;
+	if(u < n || (blocked[u] and not expandBlocked)) return;
 
 	int t;
 	//Find the position t of the new tip of the blossom
@@ -460,8 +453,11 @@ void Matching::Expand2(int u, int p, int q)
 	//We expand the vertices in the blossom
 	for(int i = 0; i < sizeShallow[u]; i++)
 	{
-		if(i == t) Expand2(shallow[u][i], p, q);
-		else Expand(shallow[u][i]);
+		//if(i == t) //Expand2(shallow[u][i], p, q, expandBlocked);
+		//	Expand(shallow[u][i], expandBlocked);
+
+		//else 
+			Expand(shallow[u][i], expandBlocked);
 	}
 }
 
@@ -544,7 +540,7 @@ int Matching::GetFreeIndex()
 	return i;
 }
 
-//Contracts the blossom t, ..., u, v, ..., t, where t is the first vertex that appears in the paths from u and v to their respective roots
+//Contracts the blossom w, ..., u, v, ..., w, where w is the first vertex that appears in the paths from u and v to their respective roots
 int Matching::Blossom(int u, int v)
 {
 	int t = GetFreeIndex();
@@ -634,7 +630,7 @@ void Matching::UpdateDualCosts()
 		int u = E1[i], v = E2[i];
 		if( (type[outer[u]] == EVEN && type[outer[v]] == UNLABELED) || (type[outer[v]] == EVEN && type[outer[u]] == UNLABELED) )
 		{
-			if(!inite1 || GREATER(e1 - slack[i], 0))
+			if(!inite1 || GREATER(e1, slack[i]))
 			{
 				e1 = slack[i];
 				inite1 = true;
@@ -642,7 +638,7 @@ void Matching::UpdateDualCosts()
 		}
 		else if( (outer[u] != outer[v]) && type[outer[u]] == EVEN && type[outer[v]] == EVEN )
 		{
-			if(!inite2 || GREATER(e2 - slack[i], 0))
+			if(!inite2 || GREATER(e2, slack[i]))
 			{
 				e2 = slack[i];
 				inite2 = true;
@@ -651,7 +647,7 @@ void Matching::UpdateDualCosts()
 	}
 	for(int i = n; i < 2*n; i++)
 	{
-		if(active[i] && i == outer[i] && type[outer[i]] == ODD && (!inite3 || GREATER(e3 - dual[i], 0)))
+		if(active[i] && i == outer[i] && type[outer[i]] == ODD && (!inite3 || GREATER(e3, dual[i])))
 		{
 			e3 = dual[i]; 
 			inite3 = true;
@@ -662,9 +658,9 @@ void Matching::UpdateDualCosts()
 	else if(inite2) e = e2;
 	else if(inite3) e = e3;
 
-	if(GREATER(e - e2/2.0, 0) && inite2)
+	if(GREATER(e, e2/2.0) && inite2)
 		e = e2/2.0;
-	if(GREATER(e - e3, 0) && inite3)
+	if(GREATER(e, e3) && inite3)
 		e = e3;
 	 
 	for(int i = 0; i < 2*n; i++)
@@ -689,38 +685,31 @@ void Matching::UpdateDualCosts()
 		if(outer[u] != outer[v])
 		{	
 			if(type[outer[u]] == EVEN && type[outer[v]] == EVEN)
-			{
 				slack[i] -= 2.0*e;
-			}
 			else if(type[outer[u]] == ODD && type[outer[v]] == ODD)
-			{
 				slack[i] += 2.0*e;
-			}	
 			else if( (type[outer[v]] == UNLABELED && type[outer[u]] == EVEN) || (type[outer[u]] == UNLABELED && type[outer[v]] == EVEN) )
-			{
 				slack[i] -= e;
-			}	
 			else if( (type[outer[v]] == UNLABELED && type[outer[u]] == ODD) || (type[outer[u]] == UNLABELED && type[outer[v]] == ODD) )
-			{
 				slack[i] += e;
-			}
 		}
 		
-		if(!GREATER(slack[i], 0))
-		{ E[sizeE++] = i;
-			AdjList[u][sizeAdjList[u]++] = v;
-			AdjList[v][sizeAdjList[v]++] = u;
-		}
+		//if(!GREATER(slack[i], 0))
+		//{ 
+		//	E[sizeE++] = i;
+		//	AdjList[u][sizeAdjList[u]++] = v;
+		//	AdjList[v][sizeAdjList[v]++] = u;
+		////}
 	}
 	for(int i = n; i < 2*n; i++)
 	{
 		if(GREATER(dual[i], 0))
 		{
-			if(blocked[i] == false)
-			{
+			//if(blocked[i] == false)
+			//{
 				//the blossom is becoming blocked
-				mate[i] = mate[tip[i]];	
-			}
+			//	mate[i] = mate[tip[i]];	
+			//}
 
 			blocked[i] = true;
 		}
@@ -734,9 +723,10 @@ void Matching::UpdateDualCosts()
 			else
 			{
 				blocked[i] = false;
-				int q = mate[i];
-				int p = mate[outer[q]];
-				Expand2(i, p, q);
+				//int q = mate[i];
+				//int p = mate[outer[q]];
+				//Expand2(i, p, q);
+				Expand(i);
 			}
 		}
 	}	
@@ -744,16 +734,18 @@ void Matching::UpdateDualCosts()
 
 void Matching::SolveMinimumCostPerfectMatching()
 {
+	SolvePerfectMatching();
+	if(!perfect)
+		throw("Error: The graph does not have a perfect matching");
+
 	Clear();
 	PositiveCosts();
-	GrantFeasibility();
-	feasible = true;
 
 	//Initialize slacks (reduced costs for the edges)
 	for(int i = 0; i < m; i++)
 		slack[i] = cost[i];
 
-	memset(sizeAdjList, 0, n*sizeof(int));
+	//memset(sizeAdjList, 0, n*sizeof(int));
 	while(true)
 	{
 		Heuristic();
@@ -763,7 +755,7 @@ void Matching::SolveMinimumCostPerfectMatching()
 		//If the matching on the compressed graph is perfect, we are done
 		if(perfect) break;
 		//Otherwise we update the dual costs	
-		memset(sizeAdjList, 0, n*sizeof(int));	
+		//memset(sizeAdjList, 0, n*sizeof(int));	
 		UpdateDualCosts();
 		//Set up the algorithm for a new grow step
 		Reset();
@@ -774,9 +766,10 @@ void Matching::SolveMinimumCostPerfectMatching()
 	{
 		if(active[i] && outer[i] == i)
 		{
-			int q = mate[i];
-			int p = mate[outer[q]];
-			Open2(i, p, q);
+			//int q = mate[i];
+			//int p = mate[outer[q]];
+			//Expand2(i, p, q, true);
+			Expand(i, true);
 		}
 	}
 
@@ -785,16 +778,11 @@ void Matching::SolveMinimumCostPerfectMatching()
 	{
 		int u = E1[i];
 		int v = E2[i];
-		if(!Artificial[u][v])
+
 		cost[i] += minEdge;
+
 		if(mate[u] == v)
 		{
-			if(Artificial[u][v])
-			{
-				feasible = false;
-				break;
-			}
-
 			matching[i] = 1;
 			obj += cost[i];
 		}
@@ -820,38 +808,7 @@ void Matching::PositiveCosts()
 			minEdge = cost[i];
 
 	for(int i = 0; i < m; i++)
-		if(!Artificial[E1[i]][E2[i]])
-			cost[i] -= minEdge;
-}
-
-void Matching::GrantFeasibility()
-{
-	maxCost = 0;
-	for(int i = 0; i < m; i++)
-		maxCost += cost[i];
-	for(int i = 0; i < n-1; i++)
-	{
-		if(!AdjMat[i][i+1])
-		{
-			AddEdge(i, i+1, maxCost);
-			Artificial[i][i+1] = true;
-			Artificial[i+1][i] = true;
-		}
-		else if(Artificial[i][i+1])
-		{
-			SetCost(i, i+1, maxCost);
-		}
-	}
-	if(!AdjMat[0][n-1])
-	{
-		AddEdge(0, n-1, maxCost+1);
-		Artificial[0][n-1] = true;
-		Artificial[n-1][0] = true;
-	}
-	else if(Artificial[0][n-1])
-	{
-		SetCost(0, n-1, maxCost);
-	}
+		cost[i] -= minEdge;
 }
 
 void Matching::SolvePerfectMatching()
@@ -897,106 +854,6 @@ void Matching::Clear()
 	}
 	
 	sizeE = 0;
-}
-
-void Matching::Open(int u)
-{
-	int v = mate[u];
-	int index = 10000000;
-	int p, q;
-	for(int i = 0; i < sizeDeep[u]; i++)
-	{	
-		int di = deep[u][i];
-		for(int j = 0; j < sizeDeep[v]; j++)
-		{
-			int dj = deep[v][j];
-			if(AdjMat[di][dj] && !GREATER(slack[ I[di][dj] ], 0) && I[di][dj] < index)
-			{
-				index = I[di][dj];
-				p = di;
-				q = dj;
-			}
-		}
-	}
-	mate[u] = q;
-	if(u < n) return;
-
-	int t;
-	for(int i = 0; i < sizeShallow[u]; i++)
-	{
-		int found = false;
-		int si = shallow[u][i];
-		for(int j = 0; j < sizeDeep[ si ]; j++)
-		{
-			if(deep[ si ][j] == p )
-			{
-				t = i;
-				found = true; break;
-			}
-		}
-		if(found) break;
-	}
-
-	mate[shallow[u][t]] = mate[u];
-
-	for(int i = t+1; i % sizeShallow[u] != t; i++)
-	{
-		if((i - t)%2)
-		{
-			mate[ shallow[u][ i%sizeShallow[u] ] ] = shallow[u][ (i+1)%sizeShallow[u] ];	
-		}
-		else
-		{
-			mate[ shallow[u][ i%sizeShallow[u] ] ] = shallow[u][ (i-1)%sizeShallow[u] ];	
-		}	
-	}
-
-	for(int i = 0; i < sizeShallow[u]; i++)
-	{
-		Open(shallow[u][i]);
-	}
-}
-
-void Matching::Open2(int u, int p, int q)
-{
-	mate[u] = q;
-	if(u < n) return;
-
-	int t;
-	for(int i = 0; i < sizeShallow[u]; i++)
-	{
-		int found = false;
-		int si = shallow[u][i];
-		for(int j = 0; j < sizeDeep[ si ]; j++)
-		{
-			if(deep[ si ][j] == p )
-			{
-				t = i;
-				found = true; break;
-			}
-		}
-		if(found) break;
-	}
-
-	mate[shallow[u][t]] = mate[u];
-
-	for(int i = t+1; i % sizeShallow[u] != t; i++)
-	{
-		if((i - t)%2)
-		{
-			mate[ shallow[u][ i%sizeShallow[u] ] ] = shallow[u][ (i+1)%sizeShallow[u] ];	
-		}
-		else
-		{
-			mate[ shallow[u][ i%sizeShallow[u] ] ] = shallow[u][ (i-1)%sizeShallow[u] ];	
-		}	
-	}
-
-	for(int i = 0; i < sizeShallow[u]; i++)
-	{
-		if(i == t) Open2(shallow[u][i], p, q);
-		else Open(shallow[u][i]);
-	}
 }
 
 void Matching::SetCost(int u, int v, double c)

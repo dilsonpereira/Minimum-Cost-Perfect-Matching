@@ -34,8 +34,8 @@ public:
 
 private:
 	void Grow();
-	void Expand(int u);
-	void Expand2(int u, int p, int q);
+	void Expand(int u, bool expandBlocked);
+	void Expand2(int u, int p, int q, bool expandBlocked);
 	void OutermostBlocked(int u, int &v);
 	void Augment(int u, int v);
 	void Reset();
@@ -44,9 +44,7 @@ private:
 	void UpdateDualCosts();
 	void Clear();
 	void DestroyBlossom(int t);
-	void Open(int u);
 	void Open2(int u, int p, int q);
-	void GrantFeasibility();
 	void Heuristic();
 	void PositiveCosts();
 	void DeleteEdges();
@@ -90,7 +88,6 @@ private:
 	int perfect;
 
 	int **AdjMat;
-	int **Artificial;
 	int **I;
 	double **C;
 	int **AdjList;
