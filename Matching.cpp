@@ -1,6 +1,6 @@
 #include "Matching.h"
 
-Matching::Matching(Graph & G):
+Matching::Matching(const Graph & G):
 	G(G),
 	n(G.GetNumVertices()),
 	m(G.GetNumEdges()),

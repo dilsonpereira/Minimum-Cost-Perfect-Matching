@@ -18,7 +18,7 @@ Graph::Graph(int n, const list< pair<int, int> > & edges):
 	}
 }
 
-pair<int, int> Graph::GetEdge(int e)
+pair<int, int> Graph::GetEdge(int e) const
 {
 	if(e > edges.size())
 		throw "Error: edge does not exist";
@@ -26,7 +26,7 @@ pair<int, int> Graph::GetEdge(int e)
 	return edges[e];
 }
 
-int Graph::GetEdgeIndex(int u, int v)
+int Graph::GetEdgeIndex(int u, int v) const
 {
 	if( u > n or
 		v > n )
@@ -67,7 +67,7 @@ void Graph::AddEdge(int u, int v)
 	edgeIndex[u][v] = edgeIndex[v][u] = m++;
 }
 
-const list<int> & Graph::AdjList(int v)
+const list<int> & Graph::AdjList(int v) const
 {
 	if(v > n)
 		throw "Error: vertex does not exist";
@@ -75,7 +75,7 @@ const list<int> & Graph::AdjList(int v)
 	return adjList[v];
 }
 
-const vector< vector<bool> > & Graph::AdjMat()
+const vector< vector<bool> > & Graph::AdjMat() const
 {
 	return adjMat;
 }
