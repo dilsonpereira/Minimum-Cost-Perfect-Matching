@@ -120,7 +120,7 @@ bool Matching::IsEdgeBlocked(int e)
 void Matching::Heuristic()
 {
 	vector<int> degree(n, 0);
-	BinaryHeap B(n);
+	BinaryHeap B;
 
 	for(int i = 0; i < m; i++)
 	{
@@ -137,9 +137,9 @@ void Matching::Heuristic()
 	for(int i = 0; i < n; i++)
 		B.Insert(degree[i], i);
 
-	int u =	B.DeleteMin();
-	while(u != -1)
+	while(B.Size() > 0)
 	{
+		int u = B.DeleteMin();
 		if(mate[outer[u]] == -1)
 		{
 			int min = -1;
@@ -161,8 +161,6 @@ void Matching::Heuristic()
 				mate[outer[min]] = u;
 			}
 		}
-
-		u = B.DeleteMin();
 	}
 }
 
