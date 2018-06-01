@@ -1,83 +1,99 @@
 #include "Matching.h"
+#include "Graph.h"
 #include <cstdlib>
 #include <iostream>
 using namespace std;
 
-int main(int argc, char* argv[])
+Graph CreateRandomGraph()
 {
-	//Number of vertices
-	//IT MUST BE EVEN!!!
-	int n = 6;
-
-	//Create a Matching instance passing the number of vertices
-	Matching *M = new Matching(n);
-
-	//Add the edges
-	//M->AddEdge(i, j, cost);
-	M->AddEdge(0, 1, 4.0);
-	M->AddEdge(0, 3, 3.0);
-	M->AddEdge(1, 3, 9.0);
-	M->AddEdge(1, 4, 12.0);
-	M->AddEdge(2, 3, 2.0);
-	M->AddEdge(2, 4, 0.0);
-	M->AddEdge(2, 5, 8.0);
-	M->AddEdge(4, 5, 1.0);
-
-	//The cost can be changed with
-	//M->setCost(v1, v2, cost);
+	//Please see Graph.h for a description of the interface
 	
-	//To solve a unweighted perfect matching problem
-	//M->SolvePerfectMatching();
-	//To solve a weighted perfect matching problem
-	M->SolveMinimumCostPerfectMatching();
+	int n = 100;
 
-	//To check whether an edge is in the matching
-	//M->IsInMatching(i, j);
-	if(M->IsInMatching(0, 1)) printf("{%d, %d} ", 0,1);
-	if(M->IsInMatching(0, 3)) printf("{%d, %d} ", 0,3);
-	if(M->IsInMatching(1, 3)) printf("{%d, %d} ", 1,3);
-	if(M->IsInMatching(1, 4)) printf("{%d, %d} ", 1,4);
-	if(M->IsInMatching(2, 3)) printf("{%d, %d} ", 2,3);
-	if(M->IsInMatching(2, 4)) printf("{%d, %d} ", 2,4);
-	if(M->IsInMatching(2, 5)) printf("{%d, %d} ", 2,5);
-	if(M->IsInMatching(4, 5)) printf("{%d, %d} ", 4,5);
-	printf("\n");
-
-	//To get optimal cost
-	//M->getObj()
-
-	delete M;
-
-	int x;
-	cin >> x;
-	srand( x );
-
-
-	//Number of vertices
-	//IT MUST BE EVEN!!!
-	n = 100;
-
-	//Create a Matching instance passing the number of vertices
-	M = new Matching(n);
+	Graph G(n);
 
 	for(int i = 0; i < n; i++)
-	{
 		for(int j = i+1; j < n; j++)
-		{
 			if(rand()%10 == 0)
-				M->AddEdge(i, j, rand()%1000);
-		}
+				G.AddEdge(i, j);
+	
+	return G;
+}
+
+void MinimumCostPerfectMatchingExample(Graph & G)
+{
+	//to get the edge given the index:
+	//pair<int, int> = G.GetEdge(i);
+	//int u = pair.first, v = pair.second
+	
+	//to get the index given the edge:
+	//int i = G.GetEdgeIndex(u, v);
+
+	vector<double> cost(G.GetNumEdges());
+	//cost[i] is the cost of the edge with index i
+	for(int i = 0; i < G.GetNumEdges(); i++)
+		cost[i] = rand()%1000;
+
+	//Create a Matching instance passing the graph
+	Matching M(G);
+
+	//Pass the costs to solve the problem
+	pair< list<int>, double > p;
+	p = M.SolveMinimumCostPerfectMatching(cost);
+
+	list<int> matching = p.first;
+	double obj = p.second;
+
+	cout << "Optimal matching cost: " << obj << endl;
+	/*
+	cout << "Edges in the matching:" << endl;
+	for(list<int>::iterator it = matching.begin(); it != matching.end(); it++)
+	{
+		pair<int, int> e = G.GetEdge( *it );
+
+		cout << e.first << " " << e.second << endl;
 	}
+	*/
+}
 
-	M->SolveMinimumCostPerfectMatching();
-	printf("%.2f\n", M->getObj());
+void MaximumMatchingExample(Graph & G)
+{
+	Matching M(G);
 
+	list<int> matching;
+	matching = M.SolveMaximumMatching();
 
-	delete M;
+	cout << "Number of edges in the maximum matching: " << matching.size() << endl;
+	/*
+	cout << "Edges in the matching:" << endl;
+	for(list<int>::iterator it = matching.begin(); it != matching.end(); it++)
+	{
+		pair<int, int> e = G.GetEdge( *it );
 
+		cout << e.first << " " << e.second << endl;
+	}
+	*/
+}
 
+int main(int argc, char* argv[])
+{
+	//Class Graph will throw const char * exceptions
+	try
+	{
+		int x;
+		cout << "Type random seed: ";
+		cin >> x;
+		srand( x );
 
+		Graph G = CreateRandomGraph();
 
+		MinimumCostPerfectMatchingExample(G);
+		//MaximumMatchingExample(G);
+	}
+	catch(const char * error)
+	{
+		cout << error << endl;
+	}
 
 	return 0;
 }
