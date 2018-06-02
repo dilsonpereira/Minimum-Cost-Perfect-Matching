@@ -18,7 +18,7 @@ void BinaryHeap::Insert(double k, int s)
 		satellite.resize(s+2);
 	}
 	//If satellite is already in the heap
-	else if(pos[k] != -1)
+	else if(pos[s] != -1)
 	{
 		throw "Error: satellite already in heap";
 	}
