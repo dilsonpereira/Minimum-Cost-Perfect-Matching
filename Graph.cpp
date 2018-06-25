@@ -8,7 +8,6 @@ Graph::Graph(int n, const list< pair<int, int> > & edges):
 	edges(),
 	edgeIndex(n, vector<int>(n, -1))
 {
-	int index = 0;
 	for(list< pair<int, int> >::const_iterator it = edges.begin(); it != edges.end(); it++)
 	{
 		int u = (*it).first;
@@ -20,7 +19,7 @@ Graph::Graph(int n, const list< pair<int, int> > & edges):
 
 pair<int, int> Graph::GetEdge(int e) const
 {
-	if(e > edges.size())
+	if(e > (int)edges.size())
 		throw "Error: edge does not exist";
 
 	return edges[e];

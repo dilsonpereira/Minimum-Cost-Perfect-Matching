@@ -2,21 +2,21 @@
 
 Matching::Matching(const Graph & G):
 	G(G),
-	n(G.GetNumVertices()),
-	m(G.GetNumEdges()),
 	outer(2*G.GetNumVertices()),
-	tip(2*G.GetNumVertices()),
-	active(2*G.GetNumVertices()),
 	deep(2*G.GetNumVertices()),
 	shallow(2*G.GetNumVertices()),
-	blocked(2*G.GetNumVertices()),
+	tip(2*G.GetNumVertices()),
+	active(2*G.GetNumVertices()),
 	type(2*G.GetNumVertices()),
-	mate(2*G.GetNumVertices()),
-	dual(2*G.GetNumVertices()),
 	forest(2*G.GetNumVertices()),
 	root(2*G.GetNumVertices()),
-	visited(2*G.GetNumVertices()),
-	slack(G.GetNumEdges())
+	blocked(2*G.GetNumVertices()),
+	dual(2*G.GetNumVertices()),
+	slack(G.GetNumEdges()),
+	mate(2*G.GetNumVertices()),
+	m(G.GetNumEdges()),
+	n(G.GetNumVertices()),
+	visited(2*G.GetNumVertices())
 {
 }
 
@@ -188,7 +188,7 @@ void Matching::DestroyBlossom(int t)
 
 void Matching::Expand(int u, bool expandBlocked = false)
 {
-	int v = mate[u];
+	int v = outer[mate[u]];
 
 	int index = m;
 	int p, q;
@@ -230,7 +230,7 @@ void Matching::Expand(int u, bool expandBlocked = false)
 			shallow[u].pop_front();
 		}
 	}
-
+	
 	list<int>::iterator it = shallow[u].begin();
 	//Adjust the mate of the tip
 	mate[*it] = mate[u];
@@ -254,11 +254,14 @@ void Matching::Expand(int u, bool expandBlocked = false)
 		outer[s] = s;
 		for(list<int>::iterator jt = deep[s].begin(); jt != deep[s].end(); jt++)
 			outer[*jt] = s;	
-
-		Expand(s, expandBlocked);
 	}
 	active[u] = false;
 	AddFreeBlossomIndex(u);
+	
+	//Expand the vertices in the blossom
+	for(list<int>::iterator it = shallow[u].begin(); it != shallow[u].end(); it++)
+		Expand(*it, expandBlocked);
+
 }
 
 //Augment the path root[u], ..., u, v, ..., root[v]
@@ -332,7 +335,7 @@ int Matching::GetFreeBlossomIndex()
 	return i;
 }
 
-int Matching::AddFreeBlossomIndex(int i)
+void Matching::AddFreeBlossomIndex(int i)
 {
 	free.push_back(i);
 }
@@ -522,18 +525,17 @@ pair< list<int>, double> Matching::SolveMinimumCostPerfectMatching(const vector<
 
 	PositiveCosts();
 
-	//Run an heuristic maximum matching algorithm
-	Heuristic();
-	//Grow a hungarian forest
-	Grow();
 	//If the matching on the compressed graph is perfect, we are done
+	perfect = false;
 	while(not perfect)
 	{
+		//Run an heuristic maximum matching algorithm
+		Heuristic();
+		//Grow a hungarian forest
+		Grow();
 		UpdateDualCosts();
 		//Set up the algorithm for a new grow step
 		Reset();
-		Heuristic();
-		Grow();
 	}
 
 	list<int> matching = RetrieveMatching();

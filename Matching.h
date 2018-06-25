@@ -51,7 +51,7 @@ private:
 	list<int> RetrieveMatching();
 
 	int GetFreeBlossomIndex();
-	int AddFreeBlossomIndex(int i);
+	void AddFreeBlossomIndex(int i);
 	void ClearBlossomIndices();
 
 	//An edge might be blocked due to the dual costs

@@ -10,7 +10,7 @@ void BinaryHeap::Clear()
 void BinaryHeap::Insert(double k, int s)
 {
 	//Ajust the structures to fit new data
-	if(s >= pos.size())
+	if(s >= (int)pos.size())
 	{
 		pos.resize(s+1, -1);
 		key.resize(s+1);
