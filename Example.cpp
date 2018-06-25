@@ -7,7 +7,7 @@
 #include <sstream>
 using namespace std;
 
-pair<Graph, vector<double>> CreateRandomGraph()
+pair< Graph, vector<double> > CreateRandomGraph()
 {
 	//random seed
 	int x;
@@ -64,7 +64,7 @@ Graph ReadGraph(string filename)
 	return G;
 }
 
-pair<Graph, vector<double>> ReadWeightedGraph(string filename)
+pair< Graph, vector<double> > ReadWeightedGraph(string filename)
 {
 	//Please see Graph.h for a description of the interface
 
@@ -107,8 +107,8 @@ void MinimumCostPerfectMatchingExample(string filename)
 	vector<double> cost;
 	
 	//Read the graph
-	pair<Graph, vector<double>> p = ReadWeightedGraph(filename);
-	//pair<Graph, vector<double>> p = CreateRandomGraph();
+	pair< Graph, vector<double> > p = ReadWeightedGraph(filename);
+	//pair< Graph, vector<double> > p = CreateRandomGraph();
 	G = p.first;
 	cost = p.second;
 
