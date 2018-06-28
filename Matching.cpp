@@ -191,7 +191,7 @@ void Matching::Expand(int u, bool expandBlocked = false)
 	int v = outer[mate[u]];
 
 	int index = m;
-	int p, q;
+	int p = -1, q = -1;
 	//Find the regular edge {p,q} of minimum index connecting u and its mate
 	//We use the minimum index to grant that the two possible blossoms u and v will use the same edge for a mate
 	for(list<int>::iterator it = deep[u].begin(); it != deep[u].end(); it++)
@@ -417,7 +417,7 @@ int Matching::Blossom(int u, int v)
 
 void Matching::UpdateDualCosts()
 {
-	double e1, e2, e3;
+	double e1 = 0, e2 = 0, e3 = 0;
 	int inite1 = false, inite2 = false, inite3 = false;
 	for(int i = 0; i < m; i++)
 	{
@@ -449,7 +449,7 @@ void Matching::UpdateDualCosts()
 			inite3 = true;
 		}	
 	}
-	double e;
+	double e = 0;
 	if(inite1) e = e1;
 	else if(inite2) e = e2;
 	else if(inite3) e = e3;
