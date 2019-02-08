@@ -210,6 +210,7 @@ void Matching::Expand(int u, bool expandBlocked = false)
 	}
 	
 	mate[u] = q;
+    mate[v] = p;
 	//If u is a regular vertex, we are done
 	if(u < n or (blocked[u] and not expandBlocked)) return;
 
