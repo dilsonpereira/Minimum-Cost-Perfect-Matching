@@ -271,6 +271,7 @@ void Matching::Augment(int u, int v)
 	//We go from u and v to its respective roots, alternating the matching
 	int p = outer[u];
 	int q = outer[v];
+    int outv = q;
 	int fp = forest[p];
 	mate[p] = q;
 	mate[q] = p;
@@ -288,7 +289,7 @@ void Matching::Augment(int u, int v)
 		Expand(q);
 	}
 
-	p = outer[v];
+	p = outv;
 	fp = forest[p];
 	while(fp != -1)
 	{
