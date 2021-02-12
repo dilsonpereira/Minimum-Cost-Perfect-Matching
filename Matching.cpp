@@ -1,5 +1,7 @@
 #include "Matching.h"
 
+namespace mcpm {
+
 Matching::Matching(const Graph & G):
 	G(G),
 	outer(2*G.GetNumVertices()),
@@ -619,3 +621,5 @@ list<int> Matching::RetrieveMatching()
 	}
 	return matching;
 }
+
+} // namespace mcpm
