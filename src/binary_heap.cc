@@ -1,5 +1,6 @@
 #include <mcpm/binary_heap.h>
 
+namespace mcpm {
 void BinaryHeap::Clear()
 {
 	key.clear();
@@ -90,4 +91,4 @@ void BinaryHeap::Remove(int s)
 
 	DeleteMin();
 }
-
+} // namespace mcpm
