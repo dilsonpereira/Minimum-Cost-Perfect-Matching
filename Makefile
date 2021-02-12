@@ -25,4 +25,4 @@ $(LIB_PATH)libmcpm.a: $(OBJ_ALL)
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)*.o *~ $(EXEC_PATH)* $(LIB_PATH)*
+	rm $(ODIR)*.o $(LIB_PATH)*
