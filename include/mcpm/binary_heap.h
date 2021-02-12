@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Globals.h"
+#include "globals.h"
 #include <vector>
 using namespace std;
 
@@ -9,6 +9,7 @@ This is a binary heap for pairs of the type (double key, int satellite)
 It is assumed that satellites are unique integers
 This is the case with graph algorithms, in which satellites are vertex or edge indices
  */
+namespace mcpm {
 class BinaryHeap
 {
 public:
@@ -37,4 +38,4 @@ private:
 };
 
 
-
+} //namespace mcpm

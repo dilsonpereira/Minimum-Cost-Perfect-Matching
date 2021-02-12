@@ -1,4 +1,4 @@
-#include "Graph.h"
+#include <mcpm/graph.h>
 
 namespace mcpm {
 

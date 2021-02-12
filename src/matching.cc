@@ -1,4 +1,4 @@
-#include "Matching.h"
+#include <mcpm/matching.h>
 
 namespace mcpm {
 

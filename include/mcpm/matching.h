@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Graph.h"
-#include "BinaryHeap.h"
+#include "graph.h"
+#include "binary_heap.h"
 #include <list>
 #include <vector>
 

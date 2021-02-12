@@ -1,5 +1,6 @@
 #pragma once
 
+namespace mcpm {
 #define EPSILON 0.000001
 #define INFINITO 1000000000.0
 #define GREATER(A, B) ((A) - (B) > EPSILON)
@@ -10,3 +11,4 @@
 #define MIN(A, B) (LESS((A),(B)) ? (A) : (B))
 #define MAX(A, B) (LESS((A),(B)) ? (B) : (A))
 
+}
