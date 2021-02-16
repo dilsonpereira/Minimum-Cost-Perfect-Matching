@@ -1,7 +1,7 @@
 #pragma once
 
-#include "graph.h"
-#include "binary_heap.h"
+#include <mcpm/graph.h>
+#include <mcpm/binary_heap.h>
 #include <list>
 #include <vector>
 
@@ -23,11 +23,11 @@ namespace mcpm {
 			//Returns a pair
 			//the first element of the pair is a list of the indices of the edges in the matching
 			//the second is the cost of the matching
-			pair< list<int>, double > SolveMinimumCostPerfectMatching(const vector<double> & cost);
+			std::pair< std::list<int>, double > SolveMinimumCostPerfectMatching(const std::vector<double> & cost);
 
 			//Solves the maximum cardinality matching problem
 			//Returns a list with the indices of the edges in the matching
-			list<int> SolveMaximumMatching();
+			std::list<int> SolveMaximumMatching();
 
 		private:
 			//Grows an alternating forest
@@ -49,7 +49,7 @@ namespace mcpm {
 			void Heuristic();
 			//Modifies the costs of the graph so the all edges have positive costs
 			void PositiveCosts();
-			list<int> RetrieveMatching();
+			std::list<int> RetrieveMatching();
 
 			int GetFreeBlossomIndex();
 			void AddFreeBlossomIndex(int i);
@@ -63,7 +63,7 @@ namespace mcpm {
 
 			const Graph & G;
 
-			list<int> free;//List of free blossom indices
+			std::list<int> free;//List of free blossom indices
 
 			std::vector<int> outer;//outer[v] gives the index of the outermost blossom that contains v, outer[v] = v if v is not contained in any blossom
 			std::vector< std::list<int> > deep;//deep[v] is a list of all the original vertices contained inside v, deep[v] = v if v is an original vertex

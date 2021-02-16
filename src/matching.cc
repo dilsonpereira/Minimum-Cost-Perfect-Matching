@@ -35,12 +35,12 @@ void Matching::Grow()
 
 		//w might be a blossom
 		//we have to explore all the connections from vertices inside the blossom to other vertices
-		for(list<int>::iterator it = deep[w].begin(); it != deep[w].end(); it++)
+		for(std::list<int>::iterator it = deep[w].begin(); it != deep[w].end(); it++)
 		{
 			int u = *it;
 
 			int cont = false;
-			for(list<int>::const_iterator jt = G.AdjList(u).begin(); jt != G.AdjList(u).end(); jt++)
+			for(std::list<int>::const_iterator jt = G.AdjList(u).begin(); jt != G.AdjList(u).end(); jt++)
 			{
 				int v = *jt;
 
@@ -121,14 +121,14 @@ bool Matching::IsEdgeBlocked(int e)
 //Each time an unmatched vertex is selected, it is matched to its adjacent unmatched vertex of minimum degree
 void Matching::Heuristic()
 {
-	vector<int> degree(n, 0);
+	std::vector<int> degree(n, 0);
 	BinaryHeap B;
 
 	for(int i = 0; i < m; i++)
 	{
 		if(IsEdgeBlocked(i)) continue;
 
-		pair<int, int> p = G.GetEdge(i);
+		std::pair<int, int> p = G.GetEdge(i);
 		int u = p.first;
 		int v = p.second;
 
@@ -145,7 +145,7 @@ void Matching::Heuristic()
 		if(mate[outer[u]] == -1)
 		{
 			int min = -1;
-			for(list<int>::const_iterator it = G.AdjList(u).begin(); it != G.AdjList(u).end(); it++)
+			for(std::list<int>::const_iterator it = G.AdjList(u).begin(); it != G.AdjList(u).end(); it++)
 			{
 				int v = *it;
 
@@ -172,11 +172,11 @@ void Matching::DestroyBlossom(int t)
 	if((t < n) or
 		(blocked[t] and GREATER(dual[t], 0))) return;
 
-	for(list<int>::iterator it = shallow[t].begin(); it != shallow[t].end(); it++)
+	for(std::list<int>::iterator it = shallow[t].begin(); it != shallow[t].end(); it++)
 	{
 		int s = *it;
 		outer[s] = s;
-		for(list<int>::iterator jt = deep[s].begin(); jt != deep[s].end(); jt++)
+		for(std::list<int>::iterator jt = deep[s].begin(); jt != deep[s].end(); jt++)
 			outer[*jt] = s;	
 
 		DestroyBlossom(s);
@@ -196,10 +196,10 @@ void Matching::Expand(int u, bool expandBlocked = false)
 	int p = -1, q = -1;
 	//Find the regular edge {p,q} of minimum index connecting u and its mate
 	//We use the minimum index to grant that the two possible blossoms u and v will use the same edge for a mate
-	for(list<int>::iterator it = deep[u].begin(); it != deep[u].end(); it++)
+	for(std::list<int>::iterator it = deep[u].begin(); it != deep[u].end(); it++)
 	{	
 		int di = *it;
-		for(list<int>::iterator jt = deep[v].begin(); jt != deep[v].end(); jt++)
+		for(std::list<int>::iterator jt = deep[v].begin(); jt != deep[v].end(); jt++)
 		{
 			int dj = *jt;
 			if(IsAdjacent(di, dj) and G.GetEdgeIndex(di, dj) < index)
@@ -218,10 +218,10 @@ void Matching::Expand(int u, bool expandBlocked = false)
 
 	bool found = false;
 	//Find the position t of the new tip of the blossom
-	for(list<int>::iterator it = shallow[u].begin(); it != shallow[u].end() and not found; )
+	for(std::list<int>::iterator it = shallow[u].begin(); it != shallow[u].end() and not found; )
 	{
 		int si = *it;
-		for(list<int>::iterator jt = deep[si].begin(); jt != deep[si].end() and not found; jt++)
+		for(std::list<int>::iterator jt = deep[si].begin(); jt != deep[si].end() and not found; jt++)
 		{
 			if(*jt == p )
 				found = true;
@@ -234,7 +234,7 @@ void Matching::Expand(int u, bool expandBlocked = false)
 		}
 	}
 	
-	list<int>::iterator it = shallow[u].begin();
+	std::list<int>::iterator it = shallow[u].begin();
 	//Adjust the mate of the tip
 	mate[*it] = mate[u];
 	it++;
@@ -242,7 +242,7 @@ void Matching::Expand(int u, bool expandBlocked = false)
 	//Now we go through the odd circuit adjusting the new mates
 	while(it != shallow[u].end())
 	{
-		list<int>::iterator itnext = it;
+		std::list<int>::iterator itnext = it;
 		itnext++;
 		mate[*it] = *itnext;
 		mate[*itnext] = *it;
@@ -251,18 +251,18 @@ void Matching::Expand(int u, bool expandBlocked = false)
 	}
 
 	//We update the sets blossom, shallow, and outer since this blossom is being deactivated
-	for(list<int>::iterator it = shallow[u].begin(); it != shallow[u].end(); it++)
+	for(std::list<int>::iterator it = shallow[u].begin(); it != shallow[u].end(); it++)
 	{
 		int s = *it;
 		outer[s] = s;
-		for(list<int>::iterator jt = deep[s].begin(); jt != deep[s].end(); jt++)
+		for(std::list<int>::iterator jt = deep[s].begin(); jt != deep[s].end(); jt++)
 			outer[*jt] = s;	
 	}
 	active[u] = false;
 	AddFreeBlossomIndex(u);
 	
 	//Expand the vertices in the blossom
-	for(list<int>::iterator it = shallow[u].begin(); it != shallow[u].end(); it++)
+	for(std::list<int>::iterator it = shallow[u].begin(); it != shallow[u].end(); it++)
 		Expand(*it, expandBlocked);
 
 }
@@ -356,7 +356,7 @@ int Matching::Blossom(int u, int v)
 {
 	int t = GetFreeBlossomIndex();
 
-	vector<bool> isInPath(2*n, false);
+	std::vector<bool> isInPath(2*n, false);
 
 	//Find the tip of the blossom
 	int u_ = u; 
@@ -374,7 +374,7 @@ int Matching::Blossom(int u, int v)
 
 	//Find the odd circuit, update shallow, outer, blossom and deep
 	//First we construct the set shallow (the odd circuit)
-	list<int> circuit;
+	std::list<int> circuit;
 	u_ = outer[u];
 	circuit.push_front(u_);
 	while(u_ != tip[t])
@@ -385,7 +385,7 @@ int Matching::Blossom(int u, int v)
 
 	shallow[t].clear();
 	deep[t].clear();
-	for(list<int>::iterator it = circuit.begin(); it != circuit.end(); it++)
+	for(std::list<int>::iterator it = circuit.begin(); it != circuit.end(); it++)
 	{
 		shallow[t].push_back(*it);
 	}
@@ -398,11 +398,11 @@ int Matching::Blossom(int u, int v)
 	}
 
 	//Now we construct deep and update outer
-	for(list<int>::iterator it = shallow[t].begin(); it != shallow[t].end(); it++)
+	for(std::list<int>::iterator it = shallow[t].begin(); it != shallow[t].end(); it++)
 	{
 		u_ = *it;
 		outer[u_] = t;
-		for(list<int>::iterator jt = deep[u_].begin(); jt != deep[u_].end(); jt++)
+		for(std::list<int>::iterator jt = deep[u_].begin(); jt != deep[u_].end(); jt++)
 		{
 			deep[t].push_back(*jt);
 			outer[*jt] = t;
@@ -516,7 +516,7 @@ void Matching::UpdateDualCosts()
 	}	
 }
 
-pair< list<int>, double> Matching::SolveMinimumCostPerfectMatching(const vector<double> & cost)
+std::pair< std::list<int>, double> Matching::SolveMinimumCostPerfectMatching(const std::vector<double> & cost)
 {
 	SolveMaximumMatching();
 	if(!perfect)
@@ -542,10 +542,10 @@ pair< list<int>, double> Matching::SolveMinimumCostPerfectMatching(const vector<
 		Reset();
 	}
 
-	list<int> matching = RetrieveMatching();
+	std::list<int> matching = RetrieveMatching();
 
 	double obj = 0;
-	for(list<int>::iterator it = matching.begin(); it != matching.end(); it++)
+	for(std::list<int>::iterator it = matching.begin(); it != matching.end(); it++)
 		obj += cost[*it];
 	
 	double dualObj = 0;
@@ -555,7 +555,7 @@ pair< list<int>, double> Matching::SolveMinimumCostPerfectMatching(const vector<
 		else if(blocked[i]) dualObj += dual[i];	
 	}
 	
-	return pair< list<int>, double >(matching, obj);
+	return std::pair< std::list<int>, double >(matching, obj);
 }
 
 void Matching::PositiveCosts()
@@ -569,7 +569,7 @@ void Matching::PositiveCosts()
 		slack[i] -= minEdge;
 }
 
-list<int> Matching::SolveMaximumMatching()
+std::list<int> Matching::SolveMaximumMatching()
 {
 	Clear();
 	Grow();
@@ -603,9 +603,9 @@ void Matching::Clear()
 	slack.assign(m, 0);
 }
 
-list<int> Matching::RetrieveMatching()
+std::list<int> Matching::RetrieveMatching()
 {
-	list<int> matching;
+	std::list<int> matching;
 
 	for(int i = 0; i < 2*n; i++)
 		if(active[i] and mate[i] != -1 and outer[i] == i)
