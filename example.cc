@@ -120,13 +120,13 @@ void MinimumCostPerfectMatchingExample(std::string filename)
 	std::list<int> matching = solution.first;
 	double obj = solution.second;
 
-	std::cout << "Optimal matching cost: " << obj << endl;
-	std::cout << "Edges in the matching:" << endl;
+	std::cout << "Optimal matching cost: " << obj << std::endl;
+	std::cout << "Edges in the matching:" << std::endl;
 	for(std::list<int>::iterator it = matching.begin(); it != matching.end(); it++)
 	{
 		std::pair<int, int> e = G.GetEdge( *it );
 
-		std::cout << e.first << " " << e.second << endl;
+		std::cout << e.first << " " << e.second << std::endl;
 	}
 }
 
@@ -138,13 +138,13 @@ void MaximumMatchingExample(std::string filename)
 	std::list<int> matching;
 	matching = M.SolveMaximumMatching();
 
-	cout << "Number of edges in the maximum matching: " << matching.size() << endl;
-	cout << "Edges in the matching:" << endl;
+	std::cout << "Number of edges in the maximum matching: " << matching.size() << std::endl;
+	std::cout << "Edges in the matching:" << std::endl;
 	for(list<int>::iterator it = matching.begin(); it != matching.end(); it++)
 	{
 		pair<int, int> e = G.GetEdge( *it );
 
-		cout << e.first << " " << e.second << endl;
+		std::cout << e.first << " " << e.second << std::endl;
 	}
 }
 
@@ -168,14 +168,14 @@ int main(int argc, char* argv[])
 
 	if(filename == "" || algorithm == "")
 	{
-		cout << "usage: ./example -f <filename> <--minweight | --max>" << endl;
-		cout << "--minweight for minimum weight perfect matching" << endl;
-		cout << "--max for maximum cardinality matching" << endl;
-		cout << "file format:" << endl;
-		cout << "the first two lines give n (number of vertices) and m (number of edges)," << endl;
-		cout << "followed by m lines, each with a tuple (u, v [, c]) representing the edges," << endl;
-	   	cout << "where u and v are the endpoints (0-based indexing) of the edge and c is its cost" << endl;	
-		cout << "the cost is optional if --max is specified" << endl;
+		std::cout << "usage: ./example -f <filename> <--minweight | --max>" << std::endl;
+		std::cout << "--minweight for minimum weight perfect matching" << std::endl;
+		std::cout << "--max for maximum cardinality matching" << std::endl;
+		std::cout << "file format:" << std::endl;
+		std::cout << "the first two lines give n (number of vertices) and m (number of edges)," << std::endl;
+		std::cout << "followed by m lines, each with a tuple (u, v [, c]) representing the edges," << std::endl;
+		std::cout << "where u and v are the endpoints (0-based indexing) of the edge and c is its cost" << std::endl;	
+		std::cout << "the cost is optional if --max is specified" << std::endl;
 		return 1;
 	}
 
@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
 	}
 	catch(const char * msg)
 	{
-		cout << msg << endl;
+		std::cout << msg << std::endl;
 		return 1;
 	}
 
