@@ -21,6 +21,9 @@ $(ODIR)%.o: $(SRCDIR)%.cc $(DEPS)
 
 $(LIB_PATH)libmcpm.a: $(OBJ_ALL)
 	ar rcs $@ $^
+
+bin/example: example.cc
+	$(CXX) example.cc -Llib/ -lmcpm -Iinclude/ -o bin/example
 	
 .PHONY: clean
 

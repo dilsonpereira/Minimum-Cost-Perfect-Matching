@@ -1,6 +1,6 @@
-#include "Matching.h"
+#include <mcpm/matching.h>
 #include <fstream>
-#include "Graph.h"
+#include <mcpm/graph.h>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -10,7 +10,7 @@ std::pair< mcpm::Graph, std::vector<double> > CreateRandomGraph()
 {
 	//random seed
 	int x;
-	cin >> x;
+	std::cin >> x;
 	srand( x );
 
 	//Please see Graph.h for a description of the interface
@@ -33,12 +33,12 @@ mcpm::Graph ReadGraph(std::string filename)
 {
 	//Please see Graph.h for a description of the interface
 
-	ifstream file;
+	std::ifstream file;
 	file.open(filename.c_str());
 
 	std::string s;
 	getline(file, s);
-	stringstream ss(s);
+	std::stringstream ss(s);
 	int n;
 	ss >> n;
 	getline(file, s);
@@ -67,12 +67,12 @@ std::pair<mcpm::Graph, std::vector<double> > ReadWeightedGraph(std::string filen
 {
 	//Please see Graph.h for a description of the interface
 
-	ifstream file;
+	std::ifstream file;
 	file.open(filename.c_str());
 
 	std::string s;
 	getline(file, s);
-	stringstream ss(s);
+	std::stringstream ss(s);
 	int n;
 	ss >> n;
 	getline(file, s);
@@ -140,9 +140,9 @@ void MaximumMatchingExample(std::string filename)
 
 	std::cout << "Number of edges in the maximum matching: " << matching.size() << std::endl;
 	std::cout << "Edges in the matching:" << std::endl;
-	for(list<int>::iterator it = matching.begin(); it != matching.end(); it++)
+	for(std::list<int>::iterator it = matching.begin(); it != matching.end(); it++)
 	{
-		pair<int, int> e = G.GetEdge( *it );
+		std::pair<int, int> e = G.GetEdge( *it );
 
 		std::cout << e.first << " " << e.second << std::endl;
 	}
