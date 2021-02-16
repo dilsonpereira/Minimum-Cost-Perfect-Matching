@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <list>
 #include <vector>
 
@@ -34,6 +35,8 @@ namespace mcpm {
 
 			//Returns the graph's adjacency matrix
 			const std::vector< std::vector<bool> > & AdjMat() const;
+
+			void PrintGraph();
 		private:
 			//Number of vertices
 			int n;
@@ -51,5 +54,6 @@ namespace mcpm {
 
 			//Indices of the edges
 			std::vector< std::vector<int> > edgeIndex;
+
 	};
 } /* namespace mcpm */

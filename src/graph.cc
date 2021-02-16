@@ -4,7 +4,7 @@ namespace mcpm {
 
 	Graph::Graph(int n, const std::list< std::pair<int, int> > & edges):
 		n(n),
-		m(edges.size()),
+		m(0),
 		adjMat(n, std::vector<bool>(n, false)),
 		adjList(n),
 		edges(),
@@ -14,7 +14,6 @@ namespace mcpm {
 		{
 			int u = (*it).first;
 			int v = (*it).second;
-
 			AddEdge(u, v);
 		}
 	}
@@ -79,6 +78,15 @@ namespace mcpm {
 	const std::vector< std::vector<bool> > & Graph::AdjMat() const
 	{
 		return adjMat;
+	}
+
+	void Graph::PrintGraph() {
+		std::cout << "Number of vertices: " << n << std::endl;
+		std::cout << "Number of edges: " << m << std::endl;
+		for(int i = 0; i < m; ++i) {
+			auto e = edges[i];
+			std::cout << e.first << " " << e.second << std::endl;
+		}
 	}
 
 } // namespace mcpm
