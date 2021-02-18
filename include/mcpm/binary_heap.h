@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Globals.h"
+#include <mcpm/globals.h>
 #include <vector>
-using namespace std;
 
 /*
 This is a binary heap for pairs of the type (double key, int satellite)
 It is assumed that satellites are unique integers
 This is the case with graph algorithms, in which satellites are vertex or edge indices
  */
+namespace mcpm {
 class BinaryHeap
 {
 public:
@@ -28,13 +28,13 @@ public:
 	void Clear();
 
 private:
-	vector<double> key;//Given the satellite, this is its key
-	vector<int> pos;//Given the satellite, this is its position in the heap
-	vector<int> satellite;//This is the heap!
+	std::vector<double> key;//Given the satellite, this is its key
+	std::vector<int> pos;//Given the satellite, this is its position in the heap
+	std::vector<int> satellite;//This is the heap!
 
 	//Number of elements in the heap
 	int size;
 };
 
 
-
+} //namespace mcpm
