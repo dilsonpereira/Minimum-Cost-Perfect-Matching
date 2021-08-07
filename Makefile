@@ -2,7 +2,7 @@ SHELL:='/bin/bash'
 CXX=g++
 IDIR=include/mcpm/
 IDIRS=-Iinclude/
-CFLAGS=-std=c++1z -Wall -O2 $(IDIRS) $(LDIR) -fopenmp
+CFLAGS=-std=c++17 -Wall -O2 $(IDIRS) $(LDIR) -fopenmp
 ODIR=obj/
 SRCDIR=src/
 
