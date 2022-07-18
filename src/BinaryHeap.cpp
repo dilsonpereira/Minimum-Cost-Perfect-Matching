@@ -2,6 +2,8 @@
 
 #include "Globals.h"
 
+using namespace mincostmatching;
+
 void BinaryHeap::Clear()
 {
 	key.clear();

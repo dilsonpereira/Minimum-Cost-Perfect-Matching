@@ -3,6 +3,9 @@
 #include <list>
 #include <vector>
 
+namespace mincostmatching
+{
+
 class Graph;
 
 class Matching
@@ -82,3 +85,4 @@ private:
 	std::vector<int> visited;
 };
 
+}

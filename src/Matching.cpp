@@ -9,6 +9,7 @@
 #define UNLABELED 0
 
 using namespace std;
+using namespace mincostmatching;
 
 Matching::Matching(const Graph & G):
 	G(G),

@@ -1,10 +1,13 @@
-#include "Matching.h"
-#include <fstream>
-#include "Graph.h"
+#include <mincost_matching.hpp>
+
 #include <cstdlib>
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <fstream>
+
+
+using namespace mincostmatching;
 using namespace std;
 
 pair< Graph, vector<double> > CreateRandomGraph()

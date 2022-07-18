@@ -2,6 +2,9 @@
 
 #include <vector>
 
+namespace mincostmatching
+{
+
 /*
 This is a binary heap for pairs of the type (double key, int satellite)
 It is assumed that satellites are unique integers
@@ -34,5 +37,6 @@ private:
 	int size;
 };
 
+}
 
 

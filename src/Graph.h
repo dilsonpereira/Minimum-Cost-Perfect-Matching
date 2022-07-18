@@ -3,6 +3,10 @@
 #include <list>
 #include <vector>
 
+
+namespace mincostmatching
+{
+
 class Graph
 {
 public:
@@ -51,3 +55,5 @@ private:
 	//Indices of the edges
 	std::vector< std::vector<int> > edgeIndex;
 };
+
+}
