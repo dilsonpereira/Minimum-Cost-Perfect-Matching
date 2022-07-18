@@ -13,12 +13,12 @@ See Example.cpp for examples of how to use the API.
 
 Compilation with G++:
 ```
-g++ -O3 example/Example.cpp src/BinaryHeap.cpp src/Matching.cpp src/Graph.cpp -I./example/ -I./src/ -o example_matching
+g++ -O3 example/Example.cpp src/BinaryHeap.cpp src/Matching.cpp src/Graph.cpp -I./example/ -I./src/ -o mincostmatching_example
 ```
 
 ## To use as a matching solver:
 ```
-./example_matching -f <filename> <--minweight | --max>
+./mincostmatching_example -f <filename> <--minweight | --max>
 ```
 `--minweight` for minimum weight perfect matching
 
@@ -52,7 +52,7 @@ Example, `input.txt`:
 ```
 
 ```
-./example_matching -f input.txt --minweight
+./mincostmatching_example -f input.txt --minweight
 ```
 
 Output:
