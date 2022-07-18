@@ -1,3 +1,8 @@
+### This is a fork of another repository
+I adjusted this repository for CMake compatibility. You can, however, still build the project as explained by the original author below (adjusted a bit).
+If you want to use the project as a library, read the [BUILD file](./BUILD.md)
+
+
 # Algorithms for Maximum Cardinality Matching and Minimum Cost Perfect Matching Problems in General Graphs
 
 I implemented these algorithms during my PhD, in 2011, following the description in:
@@ -8,12 +13,12 @@ See Example.cpp for examples of how to use the API.
 
 Compilation with G++:
 ```
-g++ -O3 Example.cpp BinaryHeap.cpp Matching.cpp Graph.cpp -o example
+g++ -O3 example/Example.cpp src/BinaryHeap.cpp src/Matching.cpp src/Graph.cpp -I./example/ -I./src/ -o mincostmatching_example
 ```
 
 ## To use as a matching solver:
 ```
-./example -f <filename> <--minweight | --max>
+./mincostmatching_example -f <filename> <--minweight | --max>
 ```
 `--minweight` for minimum weight perfect matching
 
@@ -47,7 +52,7 @@ Example, `input.txt`:
 ```
 
 ```
-./example -f input.txt --minweight
+./mincostmatching_example -f input.txt --minweight
 ```
 
 Output:
