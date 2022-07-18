@@ -1,14 +1,9 @@
 #pragma once
 
-#include "Graph.h"
-#include "BinaryHeap.h"
 #include <list>
 #include <vector>
-using namespace std;
 
-#define EVEN 2
-#define ODD 1
-#define UNLABELED 0
+class Graph;
 
 class Matching
 {
@@ -22,11 +17,11 @@ public:
 	//Returns a pair
 	//the first element of the pair is a list of the indices of the edges in the matching
 	//the second is the cost of the matching
-	pair< list<int>, double > SolveMinimumCostPerfectMatching(const vector<double> & cost);
+	std::pair< std::list<int>, double > SolveMinimumCostPerfectMatching(const std::vector<double> & cost);
 
 	//Solves the maximum cardinality matching problem
 	//Returns a list with the indices of the edges in the matching
-	list<int> SolveMaximumMatching();
+	std::list<int> SolveMaximumMatching();
 
 private:
 	//Grows an alternating forest
@@ -48,7 +43,7 @@ private:
 	void Heuristic();
 	//Modifies the costs of the graph so the all edges have positive costs
 	void PositiveCosts();
-	list<int> RetrieveMatching();
+	std::list<int> RetrieveMatching();
 
 	int GetFreeBlossomIndex();
 	void AddFreeBlossomIndex(int i);
@@ -62,28 +57,28 @@ private:
 
 	const Graph & G;
 
-	list<int> free;//List of free blossom indices
+	std::list<int> free;//List of free blossom indices
 
-	vector<int> outer;//outer[v] gives the index of the outermost blossom that contains v, outer[v] = v if v is not contained in any blossom
-	vector< list<int> > deep;//deep[v] is a list of all the original vertices contained inside v, deep[v] = v if v is an original vertex
-	vector< list<int> > shallow;//shallow[v] is a list of the vertices immediately contained inside v, shallow[v] is empty is the default
-	vector<int> tip;//tip[v] is the tip of blossom v
-	vector<bool> active;//true if a blossom is being used
+	std::vector<int> outer;//outer[v] gives the index of the outermost blossom that contains v, outer[v] = v if v is not contained in any blossom
+	std::vector< std::list<int> > deep;//deep[v] is a list of all the original vertices contained inside v, deep[v] = v if v is an original vertex
+	std::vector< std::list<int> > shallow;//shallow[v] is a list of the vertices immediately contained inside v, shallow[v] is empty is the default
+	std::vector<int> tip;//tip[v] is the tip of blossom v
+	std::vector<bool> active;//true if a blossom is being used
 
-	vector<int> type;//Even, odd, neither (2, 1, 0)
-	vector<int> forest;//forest[v] gives the father of v in the alternating forest
-	vector<int> root;//root[v] gives the root of v in the alternating forest 
+	std::vector<int> type;//Even, odd, neither (2, 1, 0)
+	std::vector<int> forest;//forest[v] gives the father of v in the alternating forest
+	std::vector<int> root;//root[v] gives the root of v in the alternating forest 
 
-	vector<bool> blocked;//A blossom can be blocked due to dual costs, this means that it behaves as if it were an original vertex and cannot be expanded
-	vector<double> dual;//dual multipliers associated to the blossoms, if dual[v] > 0, the blossom is blocked and full
-	vector<double> slack;//slack associated to each edge, if slack[e] > 0, the edge cannot be used
-	vector<int> mate;//mate[v] gives the mate of v
+	std::vector<bool> blocked;//A blossom can be blocked due to dual costs, this means that it behaves as if it were an original vertex and cannot be expanded
+	std::vector<double> dual;//dual multipliers associated to the blossoms, if dual[v] > 0, the blossom is blocked and full
+	std::vector<double> slack;//slack associated to each edge, if slack[e] > 0, the edge cannot be used
+	std::vector<int> mate;//mate[v] gives the mate of v
 
 	int m, n;
 
 	bool perfect;
 
-	list<int> forestList;
-	vector<int> visited;
+	std::list<int> forestList;
+	std::vector<int> visited;
 };
 

@@ -1,5 +1,15 @@
 #include "Matching.h"
 
+#include "Graph.h"
+#include "BinaryHeap.h"
+#include "Globals.h"
+
+#define EVEN 2
+#define ODD 1
+#define UNLABELED 0
+
+using namespace std;
+
 Matching::Matching(const Graph & G):
 	G(G),
 	outer(2*G.GetNumVertices()),

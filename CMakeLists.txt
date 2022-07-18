@@ -8,7 +8,7 @@ enable_language(C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Release)
-set(MCPM_INCLUDE_LIBS src/ examples/ test/)
+set(MCPM_INCLUDE_LIBS src/ examples/ test/ include/)
 
 # build gtest
 add_subdirectory(external)

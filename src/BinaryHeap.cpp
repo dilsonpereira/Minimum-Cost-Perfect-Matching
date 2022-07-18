@@ -1,5 +1,7 @@
 #include "BinaryHeap.h"
 
+#include "Globals.h"
+
 void BinaryHeap::Clear()
 {
 	key.clear();

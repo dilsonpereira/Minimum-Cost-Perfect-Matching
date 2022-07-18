@@ -1,5 +1,9 @@
 #include "Graph.h"
 
+#include "Globals.h"
+
+using namespace std;
+
 Graph::Graph(int n, const list< pair<int, int> > & edges):
 	n(n),
 	m(edges.size()),
